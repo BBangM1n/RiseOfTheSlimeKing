@@ -110,9 +110,13 @@
   보상지급
   아이템 소모
   다음 퀘스트 자동 연결
+  
 <details>
+  
 <summary>적용 코드</summary>
+
 ```
+
 public class Quest
 {
     public string QuestID;
