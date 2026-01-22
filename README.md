@@ -27,7 +27,9 @@
 - ID(Code) 기반 데이터 참조 방식 허용
   QuestID, ItemCode, MonsterID 등
 - 런타임에서 데이터 변경없이 콘텐츠 확장 가능한 구조 설계
-  
+# 관련 스크립트
+- ExcelReader, MonsterCSVLoader, QuestCSVLoader, MonsterDataBase, QuestDatabase, RewardDatabase
+
 <details>
   
 <summary>적용 코드</summary>
@@ -111,6 +113,8 @@
   보상지급
   아이템 소모
   다음 퀘스트 자동 연결
+# 관련 스크립트
+- QuestManager, Quest, QuestObjective, QuestState, QuestUI, Reward
   
 <details>
   
@@ -158,7 +162,9 @@ public enum QuestState
 - 퀘스트 시작 / 완료 대화 분리
 - Next 버튼 입력 처리 및 대화 인덱스 관리
 - 대화 상태 미존재 시 입력 방어 처리
-  
+# 관련 스크립트
+- ChatManager, DialogueDatabase, DialogueLine, QuestManager
+
 <details>
   
 <summary>적용 코드</summary>
@@ -246,7 +252,9 @@ public enum QuestState
 - 피격 이펙트
 - 사망 처리 및 퀘스트 연동
 - 경험치 지급 이벤트 처리
-  
+# 관련 스크립트
+- Enemy, Slime, KingSlime, MonsterHitBox, EnemyHealthBar
+
 <details>
   
 <summary>적용 코드</summary>
@@ -341,7 +349,9 @@ public class Slime : Enemy
 - 스킬 슬롯(QWER) 시스템
 - 스킬 장착 / 해제 처리
 - 스킬 발동 시 이펙트 및 데미지 처리
-  
+# 관련 스크립트
+- SKillManager, SkillData, SkillBase, SkillButton, SkillContainer, SkillUIPrefab
+
 <details>
   
 <summary>적용 코드</summary>
@@ -476,6 +486,8 @@ public abstract class SkillBase : MonoBehaviour
 - 장착 시 PlayerModel 스탯 실시간 반영
 - 드래그 앤 드롭 UI 구조
 - 소비 아이템 즉시 사용 처리
+# 관련 스크립트
+- InventoryManager, InventoryUI, Slot, PlayerSlot, Item, InventoryItem, WeaponItem, ConsumableItem
   
 <details>
   
@@ -587,6 +599,8 @@ public enum EquipSlot
   플레이 타임
 - 씬 이동 시 자동 세이브
 - 로드 후 UI및 상태 복원
+# 관련 스크립트
+- SaveManager, SaveData, SaveSlot, MainSceneInitializer
   
 <details>
   
@@ -653,7 +667,9 @@ public enum EquipSlot
 - 풀 매니저 중앙 관리 구조
 - 데미지 텍스트 / 몬스터 / 이펙트 / 아이템 재사용
 - 씬 전환 시 풀 등록 / 해제 처리
-  
+# 관련 스크립트
+- PoolManager, CommonPoolManager, MonsterPoolManager, DamageTextManager
+
 <details>
   
 <summary>적용 코드</summary>
@@ -739,7 +755,9 @@ public class PoolManager : MonoBehaviour
 - NPC 상호작용 시스템
 - 상점 UI 및 아이템 구매 처리
 - 로그 팝업 시스템 (골드 / 경험치 / 아이템)
-  
+# 관련 스크립트
+- NPC, ShopUI, ShopItemSlot, ShopOpener, LogPopupManager, LogText
+
 <details>
   
 <summary>적용 코드</summary>
@@ -792,7 +810,9 @@ public class PoolManager : MonoBehaviour
 - BGM / SFX 분리 관리
 - 씬 이름 기반 BGM 자동 전환
 - 볼륨 조절 및 토글 UI
-  
+# 관련 스크립트
+- AudioManager, SoundController
+
 <details>
   
 <summary>적용 코드</summary>
@@ -953,6 +973,8 @@ public class AudioManager : MonoBehaviour
 - Warp / Portal 기반 씬 이동
 - 스폰 포인트 ID 기반 위치 이동
 - PersistentRoot 기반 DDOL 구조 관리
+# 관련 스크립트
+- SceneLoader, Warp, Portal, SpawnPoint, PersistentRoot
   
 <details>
   
@@ -1068,6 +1090,8 @@ public class Loading : MonoBehaviour
   Controller : 입력 처리, 행동 제어
 - 전투, 장비, 스킬 시스템 확장 시
   기존 코드 영향 최소화
+# 관련 스크립트
+- PlayerModel, PlayerView, PlayerController
   
 ***
 
@@ -1078,6 +1102,8 @@ public class Loading : MonoBehaviour
   EXP 변경 이벤트
   UI 갱신 이벤트
 - 시스템 간 결합도 감소
+# 관련 스크립트
+- Enemy, ExpEvent, DamageTextManager, QuestManager
   
 <details>
   
@@ -1131,6 +1157,8 @@ protected virtual void Die()
 - 씬 로딩 / 전환 / 초기화 로직에서 Coroutine 대체
 - GC 최소화 + 가독성 향상
 - async/await 스타일로 흐름 제어
+# 관련 스크립트
+- PlayerController, ExcelReader, GameDataManager
   
 <details>
   
@@ -1177,7 +1205,9 @@ protected virtual void Die()
 - 런타임에서 필요한 리소스만 다운로드
 - 업데이트 여부 판단 후 씬 진입 제어
 - 대규모 리소스 확장 대비 구조
-- 
+# 관련 스크립트
+- DownLoad, ExcelReader, GameDataManager
+
 <details>
   
 <summary>적용 코드</summary>
@@ -1316,7 +1346,9 @@ protected virtual void Die()
 - 카메라 컨트롤러 분리 설계
 - 플레이어 추적, 제한 영역, 이동 제어
 - 씬별 카메라 동작 변경 가능 구조
-  
+# 관련 스크립트
+- MainCameraContoller
+
 <details>
   
 <summary>적용 코드</summary>
@@ -1373,6 +1405,8 @@ public class MainCameraContoller : MonoBehaviour
 - Dictionary 기반 접근
 - LINQ로 데이터 필터링 및 합산
 - 반복 로직 간결화 및 가독성 개선
+# 관련 스크립트
+- ExcelReader, GameDataManager, DataBase관련 스크립트
   
 <details>
   
