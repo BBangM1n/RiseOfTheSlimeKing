@@ -26,8 +26,11 @@
 - ID(Code) 기반 데이터 참조 방식 허용
   QuestID, ItemCode, MonsterID 등
 - 런타임에서 데이터 변경없이 콘텐츠 확장 가능한 구조 설계
+  
 <details>
+  
 <summary>적용 코드</summary>
+
 ```
     public static async UniTask<List<MonsterData>> LoadAddressablesAsync(string addressKey)
     {
@@ -89,11 +92,13 @@
             list.Add(data);
         }
     }
+
 ```
 
 </details>
 
 ***
+
 - #02)(스크립트) [퀘스트 시스템]
 - Quest / Objective / Reward 분리 구조
 - Objective 타입 기반 처리
@@ -135,6 +140,9 @@ public enum QuestState
     ReadyToClear,
     Completed
 }
+
 ```
 
 </details>
+
+***
