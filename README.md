@@ -30,9 +30,67 @@
 - 런타임에서 데이터 변경없이 콘텐츠 확장 가능한 구조 설계
 - (스크립트 일부)
 ```
+    public static async UniTask<List<MonsterData>> LoadAddressablesAsync(string addressKey)
+    {
+        var list = new List<MonsterData>();
 
+        var handle = Addressables.LoadAssetAsync<TextAsset>(addressKey);
+        TextAsset csv = await handle.Task;
+
+        if (handle.Status != AsyncOperationStatus.Succeeded || csv == null)
+        {
+            Debug.LogError($"[MonsterCSVLoader] CSV load failed: {addressKey}");
+            Addressables.Release(handle);
+            return list;
+        }
+
+        Parse(csv.text, list);
+        Addressables.Release(handle);
+
+        Debug.Log($"[MonsterCSVLoader] Loaded: {list.Count} monsters");
+        return list;
+    }
+
+    private static void Parse(string text, List<MonsterData> list)
+    {
+        string[] lines = text.Split('\n');
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            string line = lines[i].Trim();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            string[] v = line.Split(',');
+
+            if (v.Length < 8)
+            {
+                Debug.LogWarning($"[MonsterCSVLoader] Invalid row (columns < 8): {line}");
+                continue;
+            }
+
+            int maxHp = ParseIntSafe(v[3], "MaxHP", v[0], line);
+            float moveSpeed = ParseFloatSafe(v[4], "MoveSpeed", v[0], line);
+            int attack = ParseIntSafe(v[5], "Attack", v[0], line);
+            int defense = ParseIntSafe(v[6], "Defense", v[0], line);
+            int exp = ParseIntSafe(v[7], "Exp", v[0], line);
+
+            var data = new MonsterData
+            {
+                ID = v[0].Trim(),
+                KR = v[1].Trim(),
+                PoolKey = v[2].Trim(),
+                MaxHP = maxHp,
+                MoveSpeed = moveSpeed,
+                Attack = attack,
+                Defense = defense,
+                Exp = exp
+            };
+
+            list.Add(data);
+        }
+    }
 ```
-
 </details>
 
 ***
@@ -51,9 +109,33 @@
   다음 퀘스트 자동 연결
 - (스크립트 일부)
 ```
+public class Quest
+{
+    public string QuestID;
+    public string Title;
+    public string StartDialogueID;
+    public string ClearDialogueID;
+    public string RewardID;
+    public string NextQuestCode;
 
+    public List<QuestObjective> Objectives = new List<QuestObjective>();
+}
+
+public class QuestObjective
+{
+    public string Type;
+    public string TargetID;
+    public int Total;
+    public int Current = 0;
+}
+
+public enum QuestState
+{
+    NotAccepted,
+    InProgress,
+    ReadyToClear,
+    Completed
+}
 ```
 
 </details>
-
-***
