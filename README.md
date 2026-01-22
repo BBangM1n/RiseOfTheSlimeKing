@@ -29,16 +29,3 @@
 </details>
 
 ***
-
-- #02)(스크립트) [Firebase이용한 데이터베이스 관리](https://cafe.naver.com/bbangnity/86)
-<details>
-<summary>적용 코드</summary>
-- CSV -> Dic
-  
-```
-
-```
-
-</details>
-
-***
