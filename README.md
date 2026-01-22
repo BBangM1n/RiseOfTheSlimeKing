@@ -21,14 +21,13 @@
 - //
 ## 주요 활용 기술
 - #01)(스크립트) [데이터 기반 게임 구조 설계]
-<details>
-<summary>적용 코드 및 설명</summary>
 - CSV -> Dictionary 구조로 변환하여
   몬스터 / 아이템 / 퀘스트 / 대화 데이터 관리
 - ID(Code) 기반 데이터 참조 방식 허용
   QuestID, ItemCode, MonsterID 등
 - 런타임에서 데이터 변경없이 콘텐츠 확장 가능한 구조 설계
-- (스크립트 일부)
+<details>
+<summary>적용 코드</summary>
 ```
     public static async UniTask<List<MonsterData>> LoadAddressablesAsync(string addressKey)
     {
@@ -96,8 +95,6 @@
 
 ***
 - #02)(스크립트) [퀘스트 시스템]
-<details>
-<summary>적용 코드 및 설명</summary>
 - Quest / Objective / Reward 분리 구조
 - Objective 타입 기반 처리
   Talk / Kill / Collect 등
@@ -108,7 +105,8 @@
   보상지급
   아이템 소모
   다음 퀘스트 자동 연결
-- (스크립트 일부)
+<details>
+<summary>적용 코드</summary>
 ```
 public class Quest
 {
