@@ -17,7 +17,7 @@
 ## 포트폴리오 빌드 파일 
 - [구글 드라이브 링크](https://drive.google.com/file/d/1Dd5agFw8zBZszMNJ8cy5i1Fm-vF0Fih2/view?usp=drive_link)
 ## 유튜브 영상 링크
-- //
+- [유튜브 영상 링크](https://youtu.be/9soAq-kzI5c)
 ## 주요 활용 기술
 ## #01) [데이터 기반 게임 구조 설계]
 - CSV -> Dictionary 구조로 변환하여
