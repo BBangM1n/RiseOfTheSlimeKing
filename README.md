@@ -15,9 +15,7 @@
 - UniTask
 - DOTween
 ## 포트폴리오 빌드 파일 
-- //
-## 포트폴리오 에셋 파일 
-- //
+- [구글 드라이브 링크](https://drive.google.com/file/d/1Dd5agFw8zBZszMNJ8cy5i1Fm-vF0Fih2/view?usp=drive_link).
 ## 유튜브 영상 링크
 - //
 ## 주요 활용 기술
