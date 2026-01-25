@@ -482,7 +482,6 @@ public abstract class SkillBase : MonoBehaviour
 - 장비 슬롯 제한
   Head / Body / Weapon / Consumable
 - 장착 시 PlayerModel 스탯 실시간 반영
-- 드래그 앤 드롭 UI 구조
 - 소비 아이템 즉시 사용 처리
 # 관련 스크립트
 - InventoryManager, InventoryUI, Slot, PlayerSlot, Item, InventoryItem, WeaponItem, ConsumableItem
