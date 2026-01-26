@@ -6,20 +6,67 @@
 ## 개발 기간 : 2025.11.22 ~ 2026.01.22
 ## 사용 기술
 - Unity(C#)
-- Unity Addressables
+- Unity Addressables (Label 기반 런타임 다운로드 / 데이터 로드)
+- Async Programming (Coroutine + UniTask async/await 혼합 운용)
+- Object Pooling (CommonPool + MonsterPool 분리)
+- Data-Driven (CSV → Dictionary/Database 구조)
+- Event-driven (C# event/Action 기반 시스템 연결)
+- DOTween (UI/피드백 애니메이션)
+- PlayerPrefs (사운드 옵션 저장/복원)
+- JSON Save/Load (다중 슬롯, 진행도 복원)
+- LINQ (진행률/집계 처리)
 - Unity UI / EventSystem
-- CSV 기반 데이터 관리
-- Object Pooling
-- LINQ
-- JSON 기반 세이브 / 로드 형식
-- UniTask
-- DOTween
 ## 포트폴리오 빌드 파일 
 - [구글 드라이브 링크](https://drive.google.com/file/d/1Dd5agFw8zBZszMNJ8cy5i1Fm-vF0Fih2/view?usp=drive_link)
 ## 유튜브 영상 링크
 - [유튜브 영상 링크](https://youtu.be/9soAq-kzI5c)
 ## 주요 활용 기술
-## #01) [데이터 기반 게임 구조 설계]
+## #01) [게임 초기화 파이프라인 (Data Bootstrap / Ready Gate)]
+- Addressables + CSV 로딩이 완료되기 전까지 메인 진입/로드를 지연
+- GameDataManager.IsReady 기반으로 초기화 순서를 보장
+- 로드 이후 인벤토리/스킬/퀘스트/UI 상태를 복원하여 "재진입 안정성" 확보
+# 관련 스크립트
+- GameDataManager, MainSceneInitializer, ExcelReader, QuestDatabase/RewardDatabase/DialogueDatabase
+  
+<details>
+  
+<summary>적용 코드</summary>
+
+```
+
+    private async UniTaskVoid Bootstrap()
+    {
+        if (IsReady) return;
+
+        IsReady = false;
+
+        try
+        {
+            await InitializeAllData();
+
+            if (questDatabase != null) await questDatabase.LoadAll();
+            if (dialogueDatabase != null) await dialogueDatabase.LoadAll();
+            if (rewardDatabase != null) await rewardDatabase.LoadAll();
+            if (loadNameManager != null) await loadNameManager.LoadAll();
+
+            IsReady = true;
+            Debug.Log("[GameDataManager] 모든 데이터 로드 완료(IsReady=true)");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[GameDataManager] Bootstrap 실패\n{e}");
+            IsReady = false;
+        }
+    }
+
+
+```
+
+</details>
+
+***
+
+## #02) [데이터 기반 게임 구조 설계]
 - CSV -> Dictionary 구조로 변환하여
   몬스터 / 아이템 / 퀘스트 / 대화 데이터 관리
 - ID(Code) 기반 데이터 참조 방식 허용
@@ -100,7 +147,7 @@
 
 ***
 
-## #02) [퀘스트 시스템]
+## #03) [퀘스트 시스템]
 - Quest / Objective / Reward 분리 구조
 - Objective 타입 기반 처리
   Talk / Kill / Collect 등
@@ -154,7 +201,7 @@ public enum QuestState
 
 ***
 
-## #03) [대화(Dialogue) 시스템]
+## #04) [대화(Dialogue) 시스템]
 - DialogueDatabase 기반 대화 데이터 관리
 - 대화 시작 / 진행 / 종료 흐름 제어
 - 퀘스트 시작 / 완료 대화 분리
@@ -243,7 +290,7 @@ public enum QuestState
 
 ***
 
-## #04) [전투 및 몬스터 시스템]
+## #05) [전투 및 몬스터 시스템]
 - Enemy 추상 클래스 기반 공통 전투 로직 설계
 - 몬스터별 상속 구조 (Slime, KingSlime)
 - 데미지 처리
@@ -341,12 +388,14 @@ public class Slime : Enemy
 
 ***
 
-## #05) [스킬 시스템]
+## #06) [스킬 시스템]
 - 플레이어 스킬 구조 분리
   SkillData / SkillBase / SkillManager
 - 스킬 슬롯(QWER) 시스템
 - 스킬 장착 / 해제 처리
 - 스킬 발동 시 이펙트 및 데미지 처리
+- MP 소모 / 쿨타임 차단 / 쿨타임 UI(fillAmount)까지 포함한 스킬 사용 제약 시스템 구현
+- SkillBase에서 수명(lifetime) 관리 + 충돌 데미지 + 풀 반환까지 공통화하여 스킬 확장 비용 최소화
 # 관련 스크립트
 - SKillManager, SkillData, SkillBase, SkillButton, SkillContainer, SkillUIPrefab
 
@@ -476,7 +525,7 @@ public abstract class SkillBase : MonoBehaviour
 
 ***
 
-## #06) [인벤토리 & 장비 시스템]
+## #07) [인벤토리 & 장비 시스템]
 - 아이템 타입 분리
   Weapon / Consumable / Material / Etc
 - 장비 슬롯 제한
@@ -586,7 +635,7 @@ public enum EquipSlot
 
 ***
 
-## #07) [세이브 / 로드 시스템]
+## #08) [세이브 / 로드 시스템]
 - 슬롯 기반 세이브 구조 (다중 슬롯)
 - 저장 대상
   플레이어 스탯
@@ -659,7 +708,7 @@ public enum EquipSlot
 
 ***
 
-## #08) [오브젝트 풀링 및 성능 최적화]
+## #09) [오브젝트 풀링 및 성능 최적화]
 - 공용 풀 + 몬스터 전용 풀 분리
 - 풀 매니저 중앙 관리 구조
 - 데미지 텍스트 / 몬스터 / 이펙트 / 아이템 재사용
@@ -747,7 +796,7 @@ public class PoolManager : MonoBehaviour
 
 ***
 
-## #09) [UI 이벤트 및 상호작용 처리]
+## #10) [UI 이벤트 및 상호작용 처리]
 - EventSystem 기반 클릭 / 입력 처리
 - NPC 상호작용 시스템
 - 상점 UI 및 아이템 구매 처리
@@ -802,7 +851,7 @@ public class PoolManager : MonoBehaviour
 
 ***
 
-## #10) [사운드 시스템]
+## #11) [사운드 시스템]
 - AudioManager 중심 구조
 - BGM / SFX 분리 관리
 - 씬 이름 기반 BGM 자동 전환
@@ -965,10 +1014,11 @@ public class AudioManager : MonoBehaviour
 
 ***
 
-## #11) [씬 & 월드 관리]
-- 로딩 씬 -> 메인 -> 필드 구조
-- Warp / Portal 기반 씬 이동
-- 스폰 포인트 ID 기반 위치 이동
+## #12) [씬 & 월드 관리]
+- Warp 트리거 → SceneLoader에 TargetScene/SpawnPointID 저장
+- Loading 씬에서 비동기 로딩 후 목적 씬 진입
+- SpawnPointID로 정확한 위치 스폰 (맵 확장 시 재사용 가능)
+- 씬 이동 시 자동 세이브로 데이터 유실 방지
 - PersistentRoot 기반 DDOL 구조 관리
 # 관련 스크립트
 - SceneLoader, Warp, Portal, SpawnPoint, PersistentRoot
@@ -1079,7 +1129,7 @@ public class Loading : MonoBehaviour
 
 ***
 
-## #12) [MVC 패턴 기반 플레이어 구조 설계]
+## #13) [MVC 패턴 기반 플레이어 구조 설계]
 - PlayerModel / PlayerView / PlayerController 분리
 - 책임 분리 원칙 적용
   Model : 스탯, 수치, 상태 관리
@@ -1092,7 +1142,7 @@ public class Loading : MonoBehaviour
   
 ***
 
-## #13) [이벤트 기반 구조 설계]
+## #14) [이벤트 기반 구조 설계]
 - C# event / Action 활용
 - 직접 참조 최소화
   HP 변경 이벤트
@@ -1149,7 +1199,7 @@ protected virtual void Die()
 
 ***
 
-## #14) [UniTask 기반 비동기 처리 구조]
+## #15) [UniTask 기반 비동기 처리 구조]
 - Cysharp.Threading.Tasks (UniTask) 사용
 - 씬 로딩 / 전환 / 초기화 로직에서 Coroutine 대체
 - GC 최소화 + 가독성 향상
@@ -1197,7 +1247,7 @@ protected virtual void Die()
 
 ***
 
-## #15) [Addressables 기반 리소스 관리 및 최적화]
+## #16) [Addressables 기반 리소스 관리 및 최적화]
 - 라벨 기반 Addressables 다운로드 구조
 - 런타임에서 필요한 리소스만 다운로드
 - 업데이트 여부 판단 후 씬 진입 제어
@@ -1339,7 +1389,7 @@ protected virtual void Die()
 
 ***
 
-## #16) [카메라 시스템 분리 및 제어 구조]
+## #17) [카메라 시스템 분리 및 제어 구조]
 - 카메라 컨트롤러 분리 설계
 - 플레이어 추적, 제한 영역, 이동 제어
 - 씬별 카메라 동작 변경 가능 구조
@@ -1398,12 +1448,12 @@ public class MainCameraContoller : MonoBehaviour
 
 ***
 
-## #17) [LINQ 및 컬렉션 최적 활용]
+## #18) [LINQ 및 컬렉션 최적 활용]
 - Dictionary 기반 접근
 - LINQ로 데이터 필터링 및 합산
 - 반복 로직 간결화 및 가독성 개선
 # 관련 스크립트
-- ExcelReader, GameDataManager, DataBase관련 스크립트
+- ExcelReader, GameDataManager, DataBase
   
 <details>
   
@@ -1455,3 +1505,206 @@ public static class MonsterDatabase
 </details>
 
 ***
+
+## #19) [UI/UX Polish (Tween 기반 피드백)]
+- HP/MP/EXP UI를 DOTween으로 부드럽게 보간하여 시각적 피드백 강화
+- DamageText는 DOTween + Pooling으로 재사용(스폰 폭주 상황에서 GC/Instantiate 최소화)
+- 로그 팝업은 Pool + UniTask Fade로 일정 시간 노출 후 자동 정리
+# 관련 스크립트
+- UIManager, DamageText, LogPopupManager, LogText
+  
+<details>
+  
+<summary>적용 코드</summary>
+
+```
+
+    public void SetHP(int current)
+    {
+        currentHp = current;
+
+        hpSlider.DOKill();
+        hpSlider.DOValue(currentHp, 0.3f).SetEase(Ease.OutQuad);
+
+        hpText.text = $"{maxHp} / {currentHp}";
+    }
+
+    public void SetMP(int current)
+    {
+        currentMp = current;
+
+        mpSlider.DOKill();
+        mpSlider.DOValue(currentMp, 0.3f).SetEase(Ease.OutQuad);
+
+        mpText.text = $"{maxMp}  /  {currentMp}";
+    }
+
+    public void SetEXP(int current)
+    {
+        currentExp = current;
+
+        expSlider.DOKill();
+        expSlider.DOValue(currentExp, 0.3f).SetEase(Ease.OutQuad);
+
+        expText.text = $"{currentExp} ( {(float)currentExp / maxExp * 100f:F1} % )";
+    }
+
+```
+
+</details>
+
+***
+
+## #20) [게임 옵션 시스템 (Settings Persistence)]
+- BGM/SFX 볼륨 슬라이더 + 토글 UI 제공
+- PlayerPrefs에 저장하여 재실행/로드 이후에도 옵션 유지
+- 버튼 입력 시 SFX 피드백 연결
+# 관련 스크립트
+- AudioManager, SoundController
+  
+<details>
+  
+<summary>적용 코드</summary>
+
+```
+    private void ToggleBgm()
+    {
+        if (bgmSlider == null) return;
+
+        if (isBgmOn)
+        {
+            savedBgmVolume = bgmSlider.value;
+            bgmSlider.value = 0f;
+        }
+        else
+        {
+            bgmSlider.value = savedBgmVolume <= 0f ? 0.5f : savedBgmVolume;
+        }
+
+        AudioManager.Instance?.PlaySfx(SfxType.ButtonClick);
+    }
+
+    private void ToggleSfx()
+    {
+        if (sfxSlider == null) return;
+
+        if (isSfxOn)
+        {
+            savedSfxVolume = sfxSlider.value;
+            sfxSlider.value = 0f;
+        }
+        else
+        {
+            sfxSlider.value = savedSfxVolume <= 0f ? 0.5f : savedSfxVolume;
+        }
+
+        AudioManager.Instance?.PlaySfx(SfxType.ButtonClick);
+    }
+
+    public void ApplyFromSave(float bgm, float sfx)
+    {
+        savedBgmVolume = bgm;
+        savedSfxVolume = sfx;
+
+        if (bgmSlider != null) bgmSlider.value = bgm;
+        if (sfxSlider != null) sfxSlider.value = sfx;
+
+        PlayerPrefs.SetFloat(BGM_KEY, bgm);
+        PlayerPrefs.SetFloat(SFX_KEY, sfx);
+
+        isBgmOn = bgm > 0.001f;
+        isSfxOn = sfx > 0.001f;
+        UpdateIcons();
+    }
+
+```
+
+</details>
+
+***
+
+## #21) [안정성/방어 로직]
+- UI가 입력을 막는 상태(Chat UI)에서는 플레이 입력 차단
+- 데이터 미로드/참조 누락 상황에서 Null 방어 + 로그로 추적 가능하도록 처리
+- 초기화 타임아웃/예외 케이스 대응으로 런타임 크래시 방지
+# 관련 스크립트
+- ChatManager, QuestManager, MainSceneInitializer
+  
+<details>
+  
+<summary>적용 코드</summary>
+
+```
+private IEnumerator Start()
+{
+    yield return WaitForGameDataReady();
+
+    if (SaveManager.Instance == null)
+        yield break;
+
+    bool hasSave = SaveManager.Instance.ShouldLoadOnMain && SaveManager.Instance.HasSaveData(SaveManager.Instance.CurrentSlotIndex);
+
+    if (hasSave)
+    {
+        SaveManager.Instance.LoadGame();
+
+        yield return null;
+
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.RefreshInventoryUI();
+            InventoryManager.Instance.RefreshPlayerSlots();
+        }
+
+        if (SkillManager.Instance != null)
+        {
+            SkillManager.Instance.UpdateAllSkillUILocks();
+            SkillManager.Instance.RefreshSlotIcons();
+        }
+
+        if (QuestManager.Instance != null)
+            QuestManager.Instance.RestoreCurrentQuestFromGame();
+
+        if (player != null)
+        {
+            player.SyncUI();
+        }
+
+        StartCoroutine(DelayedConsumableRefresh(0.5f));
+    }
+}
+
+private IEnumerator WaitForGameDataReady()
+ {
+   if (GameDataManager.Instance == null)
+      yield break;
+
+    float timeout = 15f;
+    float t = 0f;
+
+   while (t < timeout)
+  {
+    if (GameDataManager.Instance.IsReady)
+      yield break;
+
+    t += Time.unscaledDeltaTime;
+      yield return null;
+  }
+
+  Debug.LogWarning("[초기화] GameDataManager.IsReady 대기 시간 초과. (Addressables/DB 로드 확인 필요)");
+}
+
+```
+
+</details>
+
+***
+
+## 개발 후 마지막 소감 :
+이번 프로젝트를 통해 데이터 기반 구조와 확장성을 고려한 설계의 중요성을 체감할 수 있었습니다.
+다만 일부 데이터와 설정이 Inspector에 의존하면서 완전한 데이터 분리까지는 도달하지 못한 점이 아쉬웠고,
+Singleton 기반 매니저 구조가 프로젝트 후반으로 갈수록 의존성이 커지는 문제도 경험했습니다.
+또한 UniTask와 Addressables를 활용한 비동기 구조는 성능과 구조 면에서는 장점이 있었지만,
+로드 타이밍과 상태 추적 측면에서 디버깅 난이도가 높아지는 부분도 직접 느낄 수 있었습니다.
+이러한 경험을 바탕으로 다음 프로젝트에서는
+책임 분리, 의존성 관리, 데이터 검증 자동화까지 고려한 구조를 설계하고 싶습니다.
